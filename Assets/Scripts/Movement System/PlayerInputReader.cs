@@ -1,0 +1,94 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Materialization.Core.Input
+{
+    public class PlayerInputReader : MonoBehaviour
+    {
+        private PlayerControls controls;
+
+        public Vector2 Move { get; private set; }
+        public Vector2 Look { get; private set; }
+        public float CameraZoom { get; private set; }
+
+        public bool SprintHeld { get; private set; }
+        public bool CameraModeActive { get; private set; }
+
+        public bool JumpPressed { get; private set; }
+        public bool AttackPressed { get; private set; }
+        public bool MenuPressed { get; private set; }
+
+        public bool InteractPressed { get; private set; }
+
+        private void Awake()
+        {
+            controls = new PlayerControls();
+
+            controls.Player.Move.performed += ctx => Move = ctx.ReadValue<Vector2>();
+            controls.Player.Move.canceled += _ => Move = Vector2.zero;
+
+            controls.Player.Look.performed += ctx => Look = ctx.ReadValue<Vector2>();
+            controls.Player.Look.canceled += _ => Look = Vector2.zero;
+
+            controls.Player.CameraZoom.performed += ctx =>
+            {
+                CameraZoom = ctx.ReadValue<float>();
+                Debug.Log("Zoom fired: " + CameraZoom);
+            };
+            controls.Player.CameraZoom.canceled += _ => CameraZoom = 0f;
+
+            controls.Player.Sprint.performed += _ => SprintHeld = true;
+            controls.Player.Sprint.canceled += _ => SprintHeld = false;
+
+            controls.Player.Jump.performed += _ => JumpPressed = true;
+            controls.Player.AttackUseMaterial.performed += _ => AttackPressed = true;
+            controls.Player.Menu.performed += _ => MenuPressed = true;
+            controls.Player.Interact.performed += _ => InteractPressed = true;
+
+            controls.Player.ToggleCamera.performed += _ =>
+            {
+                CameraModeActive = !CameraModeActive;
+                UpdateCursorState();
+            };
+        }
+        private void OnEnable()
+        {
+            controls.Enable();
+        }
+
+        private void OnDisable()
+        {
+            controls.Disable();
+        }
+
+        private void LateUpdate()
+        {
+            JumpPressed = false;
+            AttackPressed = false;
+            MenuPressed = false;
+            InteractPressed = false;
+        }
+
+        public float ConsumeZoom()
+        {
+            float zoom = CameraZoom;
+            CameraZoom = 0f;
+            return zoom;
+        }
+
+        private void UpdateCursorState()
+        {
+            if (CameraModeActive)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+        }
+    }
+}
