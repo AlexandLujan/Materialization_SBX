@@ -9,6 +9,7 @@ namespace Materialization.Features.Inventory
     {
         public string materialName;
         public Sprite icon;
+        public InventoryCategory category;
         public int maxStock;
     }
 }

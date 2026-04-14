@@ -8,6 +8,6 @@ namespace Materialization.Features.Inventory
     public class InventoryCategory
     {
         public string categoryName;
-        public List<InventorySlot> slots;
+        public List<InventorySlot> slots = new List<InventorySlot>();
     }
 }
