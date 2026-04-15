@@ -5,66 +5,69 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventorySystem : MonoBehaviour
+namespace Materialization.Features.Inventory
 {
-    [SerializeField] private InventorySlot equippedSlot = new InventorySlot();
-    [SerializeField] private InventoryCategory materialCategory;
-    [SerializeField] private int selectedFingerIndex = 0;
-
-    public InventorySlot EquippedSlot => equippedSlot;
-    public List<InventorySlot> FingerSlots => materialCategory.slots;
-    public int SelectedFingerIndex => selectedFingerIndex;
-
-    public event Action OnInventoryChanged;
-    public event Action<int> OnSelectionChanged;
-
-    public void Start()
+    public class InventorySystem : MonoBehaviour
     {
-        OnInventoryChanged?.Invoke();
-    }
+        [SerializeField] private InventorySlot equippedSlot = new InventorySlot();
+        [SerializeField] private InventoryCategory materialCategory;
+        [SerializeField] private int selectedFingerIndex = 0;
 
-    public void SelectFinger(int index)
-    {
-        if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
-            return;
+        public InventorySlot EquippedSlot => equippedSlot;
+        public List<InventorySlot> FingerSlots => materialCategory.slots;
+        public int SelectedFingerIndex => selectedFingerIndex;
 
-        if (index < 0 || index >= materialCategory.slots.Count)
-            return;
+        public event Action OnInventoryChanged;
+        public event Action<int> OnSelectionChanged;
 
-        selectedFingerIndex = index;
-        OnSelectionChanged?.Invoke(selectedFingerIndex);
-        OnInventoryChanged?.Invoke();
-    }
+        public void Start()
+        {
+            OnInventoryChanged?.Invoke();
+        }
 
-    public void SelectNextFinger()
-    {
-        if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
-            return;
+        public void SelectFinger(int index)
+        {
+            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
+                return;
 
-        selectedFingerIndex = (selectedFingerIndex + 1) % materialCategory.slots.Count;
-        OnSelectionChanged?.Invoke(selectedFingerIndex);
-        OnInventoryChanged?.Invoke();
-    }
+            if (index < 0 || index >= materialCategory.slots.Count)
+                return;
 
-    public void SelectPreviousFinger()
-    {
-        if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
-            return;
+            selectedFingerIndex = index;
+            OnSelectionChanged?.Invoke(selectedFingerIndex);
+            OnInventoryChanged?.Invoke();
+        }
 
-        selectedFingerIndex = (selectedFingerIndex - 1 + materialCategory.slots.Count) % materialCategory.slots.Count;
-        OnSelectionChanged?.Invoke(selectedFingerIndex);
-        OnInventoryChanged?.Invoke();
-    }
+        public void SelectNextFinger()
+        {
+            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
+                return;
 
-    public void SwapPalmWithFinger()
-    {
-        if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
-            return;
+            selectedFingerIndex = (selectedFingerIndex + 1) % materialCategory.slots.Count;
+            OnSelectionChanged?.Invoke(selectedFingerIndex);
+            OnInventoryChanged?.Invoke();
+        }
 
-        if (selectedFingerIndex < 0 || selectedFingerIndex >= materialCategory.slots.Count)
-            return;
+        public void SelectPreviousFinger()
+        {
+            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
+                return;
 
-        equippedSlot.SwapWith(materialCategory.slots[selectedFingerIndex]);
-        OnInventoryChanged?.Invoke();
+            selectedFingerIndex = (selectedFingerIndex - 1 + materialCategory.slots.Count) % materialCategory.slots.Count;
+            OnSelectionChanged?.Invoke(selectedFingerIndex);
+            OnInventoryChanged?.Invoke();
+        }
+
+        public void SwapPalmWithFinger()
+        {
+            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
+                return;
+
+            if (selectedFingerIndex < 0 || selectedFingerIndex >= materialCategory.slots.Count)
+                return;
+
+            equippedSlot.SwapWith(materialCategory.slots[selectedFingerIndex]);
+            OnInventoryChanged?.Invoke();
+        }
     }
 }
