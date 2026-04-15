@@ -18,6 +18,11 @@ public class InventorySystem : MonoBehaviour
     public event Action OnInventoryChanged;
     public event Action<int> OnSelectionChanged;
 
+    public void Start()
+    {
+        OnInventoryChanged?.Invoke();
+    }
+
     public void SelectFinger(int index)
     {
         if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
