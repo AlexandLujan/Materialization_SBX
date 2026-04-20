@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Materialization.Core.Input;
+using Materialization.Features.Inventory;
 
 namespace Materialization.Features.Movement
 {
@@ -15,6 +16,8 @@ namespace Materialization.Features.Movement
         [SerializeField] private PlayerInputReader input;
         [SerializeField] private GroundChecker groundChecker;
         [SerializeField] private PlayerMovementSystem movementSystem;
+        // Debug fix for now, I will remove this when I implement the Input Handling System.
+        [SerializeField] private InventorySystem inventorySystem;
 
         [Header("Movement")]
         [SerializeField] private float walkSpeed = 6f;
@@ -140,6 +143,9 @@ namespace Materialization.Features.Movement
 
         private void HandleActions()
         {
+            if (inventorySystem != null && inventorySystem.IsOpen)
+                return;
+
             // Will likely require some sort of Animation and Feedback communication system.
             if (input.AttackPressed)
                 Debug.Log("Attack Triggered");

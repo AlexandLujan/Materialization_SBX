@@ -21,6 +21,11 @@ namespace Materialization.Core.Input
 
         public bool InteractPressed { get; private set; }
 
+        public bool InventoryLeftPressed { get; private set; }
+        public bool InventoryRightPressed { get; private set; }
+        public bool InventorySelectPressed { get; private set; }
+        public bool InventoryBackPressed { get; private set; }
+
         private void Awake()
         {
             controls = new PlayerControls();
@@ -51,6 +56,11 @@ namespace Materialization.Core.Input
                 CameraModeActive = !CameraModeActive;
                 UpdateCursorState();
             };
+
+            controls.Inventory.MoveLeft.performed += ctx => InventoryLeftPressed = true;
+            controls.Inventory.MoveRight.performed += ctx => InventoryRightPressed = true;
+            controls.Inventory.Selection.performed += ctx => InventorySelectPressed = true;
+            controls.Inventory.GoBack.performed += ctx => InventoryBackPressed = true;
         }
         private void OnEnable()
         {
@@ -68,6 +78,9 @@ namespace Materialization.Core.Input
             AttackPressed = false;
             MenuPressed = false;
             InteractPressed = false;
+
+            InventorySelectPressed = false;
+            InventoryBackPressed = false;
         }
 
         public float ConsumeZoom()

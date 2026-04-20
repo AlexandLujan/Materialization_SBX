@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialName: Grass
   icon: {fileID: 21300000, guid: 01dd11fffd62307489d3470499229170, type: 3}
-  maxStock: 5
+  maxStock: 12

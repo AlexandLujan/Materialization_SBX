@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialName: Rope
   icon: {fileID: 21300000, guid: 2e12d0781c11f3d469d869874187e53c, type: 3}
-  maxStock: 5
+  maxStock: 12

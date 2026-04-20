@@ -13,11 +13,47 @@ namespace Materialization.Features.Inventory.UI
         [SerializeField] private Image iconImage;
         [SerializeField] private Image highlightImage;
         [SerializeField] private TMP_Text stockText;
+        [SerializeField] private CanvasGroup canvasGroup;
 
         private void Awake()
         {
             if (rectTransform == null)
                 rectTransform = GetComponent<RectTransform>();
+            if (stockText == null)
+                stockText = GetComponentInChildren<TMP_Text>(true);
+        }
+
+        public void Refresh(InventorySlot slot, bool isSelected, bool isFingerSlot)
+        {
+            if (slot == null || !slot.HasMaterial)
+            {
+                SetEmpty();
+                return;
+            }
+
+            Sprite icon = null;
+
+            if (slot.MaterialData != null)
+                icon = slot.MaterialData.Icon;
+
+            SetFilled(icon, slot.CurrentStock);
+            SetSelected(isSelected);
+
+            if (stockText != null)
+            {
+                if (isFingerSlot)
+                {
+                    stockText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    stockText.gameObject.SetActive(true);
+                    stockText.text = slot.CurrentStock.ToString();
+                }
+            }
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = slot.HasStock ? 1f : 0.4f;
         }
 
         public void SetEmpty()
@@ -32,7 +68,13 @@ namespace Materialization.Features.Inventory.UI
             }
 
             if (stockText != null)
-                stockText.text = "";
+            {
+                stockText.text = string.Empty;
+                stockText.gameObject.SetActive(true);
+            }
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = 1f;
 
             SetSelected(false);
         }
@@ -40,7 +82,7 @@ namespace Materialization.Features.Inventory.UI
         public void SetFilled(Sprite icon, int stock)
         {
             if (placeholderImage != null)
-                placeholderImage.enabled = true;
+                placeholderImage.enabled = false;
 
             if (iconImage != null)
             {
@@ -60,6 +102,8 @@ namespace Materialization.Features.Inventory.UI
 
         public void SetSlotVisual(Vector2 position, Vector2 size, Vector3 scale, int siblingIndex)
         {
+            if (rectTransform == null) return;
+
             rectTransform.anchoredPosition = position;
             rectTransform.sizeDelta = size;
             rectTransform.localScale = scale;

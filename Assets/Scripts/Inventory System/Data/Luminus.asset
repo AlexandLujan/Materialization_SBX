@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialName: Luminus
   icon: {fileID: 21300000, guid: 85ce90e63ab5c3e438dd0f8baeadcbb5, type: 3}
-  maxStock: 5
+  maxStock: 12

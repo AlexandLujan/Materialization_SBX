@@ -7,8 +7,20 @@ namespace Materialization.Features.Inventory.UI
     public class RadialInventoryUI : MonoBehaviour
     {
         [SerializeField] private InventorySystem inventorySystem;
+        [SerializeField] private GameObject root;
+
+        [Header("Views")]
         [SerializeField] private InventorySlotView palmView;
         [SerializeField] private InventorySlotView[] fingerViews;
+
+        private void Awake()
+        {
+            if (inventorySystem == null)
+                inventorySystem = GetComponentInParent<InventorySystem>();
+
+            if (root != null)
+                root.SetActive(false);
+        }
 
         private void OnEnable()
         {
@@ -17,8 +29,6 @@ namespace Materialization.Features.Inventory.UI
 
             inventorySystem.OnInventoryChanged += RefreshUI;
             inventorySystem.OnSelectionChanged += HandleSelectionChanged;
-
-            RefreshUI();
         }
 
         private void OnDisable()
@@ -28,7 +38,10 @@ namespace Materialization.Features.Inventory.UI
 
             inventorySystem.OnInventoryChanged -= RefreshUI;
             inventorySystem.OnSelectionChanged -= HandleSelectionChanged;
+        }
 
+        private void Start()
+        {
             RefreshUI();
         }
 
@@ -39,20 +52,31 @@ namespace Materialization.Features.Inventory.UI
 
         private void RefreshUI()
         {
+            if (inventorySystem == null)
+            {
+                Debug.LogWarning("RadialInventoryUI: inventorySystem is null.");
+                return;
+            }
+
+            Debug.Log($"RadialInventoryUI RefreshUI -> IsOpen: {inventorySystem.IsOpen}");
+
+            if (root != null)
+                root.SetActive(inventorySystem.IsOpen);
+
             RefreshPalm();
             RefreshFingers();
         }
 
         private void RefreshPalm()
         {
-            InventorySlot slot = inventorySystem.EquippedSlot;
+            if (palmView == null)
+                return;
 
-            if (slot == null || slot.IsEmpty)
-                palmView.SetEmpty();
-            else
-                palmView.SetFilled(slot.materialData.icon, slot.currentStock);
-
-            palmView.SetSelected(false);
+            palmView.Refresh(
+                inventorySystem.EquippedSlot,
+                isSelected: false,
+                isFingerSlot: false
+            );
         }
 
         private void RefreshFingers()
@@ -61,12 +85,21 @@ namespace Materialization.Features.Inventory.UI
 
             for (int i = 0; i < fingerViews.Length; i++)
             {
-                if (slots == null || i >= slots.Count || slots[i] == null || slots[i].IsEmpty)
-                    fingerViews[i].SetEmpty();
-                else
-                    fingerViews[i].SetFilled(slots[i].materialData.icon, slots[i].currentStock);
+                if (fingerViews[i] == null) continue;
 
-                fingerViews[i].SetSelected(i == inventorySystem.SelectedFingerIndex);
+                if (slots == null || i >= slots.Count || slots[i] == null || slots[i].IsEmpty || slots[i] == null)
+                {
+                    fingerViews[i].SetEmpty();
+                    continue;
+                }
+
+                bool isSelected = i == inventorySystem.SelectedFingerIndex;
+
+                fingerViews[i].Refresh(
+                    slots[i],
+                    isSelected: isSelected,
+                    isFingerSlot: true
+                );
             }
         }
     }

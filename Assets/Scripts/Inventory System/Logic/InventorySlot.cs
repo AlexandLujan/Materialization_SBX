@@ -11,8 +11,12 @@ namespace Materialization.Features.Inventory
         public int currentStock;
         public int maxStock;
 
-        public string ItemName => materialData != null ? materialData.materialName : string.Empty;
+        public string ItemName => materialData != null ? materialData.MaterialName : string.Empty;
         public bool IsEmpty => materialData == null || currentStock <= 0;
+        public bool HasMaterial => materialData != null;
+        public bool HasStock => materialData != null && currentStock > 0;
+        public int CurrentStock => currentStock;
+        public MaterialDefinition MaterialData => materialData;
 
         public void Clear()
         {
@@ -25,7 +29,7 @@ namespace Materialization.Features.Inventory
         {
             materialData = newMaterial;
             currentStock = stock;
-            maxStock = newMaterial != null ? newMaterial.maxStock : 0;
+            maxStock = newMaterial != null ? newMaterial.MaxStock : 0;
         }
 
         public void SwapWith(InventorySlot other)

@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   materialName: Balloon
   icon: {fileID: 21300000, guid: cd0995bd77b58d64a9430f06cfd8049f, type: 3}
-  maxStock: 5
+  maxStock: 12

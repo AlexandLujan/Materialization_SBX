@@ -12,6 +12,8 @@ namespace Materialization.Features.Inventory
         [SerializeField] private InventorySlot equippedSlot = new InventorySlot();
         [SerializeField] private InventoryCategory materialCategory;
         [SerializeField] private int selectedFingerIndex = 0;
+        [SerializeField] private bool isOpen;
+        public bool IsOpen => isOpen;
 
         public InventorySlot EquippedSlot => equippedSlot;
         public List<InventorySlot> FingerSlots => materialCategory.slots;
@@ -20,7 +22,7 @@ namespace Materialization.Features.Inventory
         public event Action OnInventoryChanged;
         public event Action<int> OnSelectionChanged;
 
-        public void Start()
+        private void Start()
         {
             OnInventoryChanged?.Invoke();
         }
@@ -40,22 +42,12 @@ namespace Materialization.Features.Inventory
 
         public void SelectNextFinger()
         {
-            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
-                return;
-
-            selectedFingerIndex = (selectedFingerIndex + 1) % materialCategory.slots.Count;
-            OnSelectionChanged?.Invoke(selectedFingerIndex);
-            OnInventoryChanged?.Invoke();
+            MoveSelection(1);
         }
 
         public void SelectPreviousFinger()
         {
-            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
-                return;
-
-            selectedFingerIndex = (selectedFingerIndex - 1 + materialCategory.slots.Count) % materialCategory.slots.Count;
-            OnSelectionChanged?.Invoke(selectedFingerIndex);
-            OnInventoryChanged?.Invoke();
+            MoveSelection(-1);
         }
 
         public void SwapPalmWithFinger()
@@ -67,6 +59,81 @@ namespace Materialization.Features.Inventory
                 return;
 
             equippedSlot.SwapWith(materialCategory.slots[selectedFingerIndex]);
+            OnInventoryChanged?.Invoke();
+            OnSelectionChanged?.Invoke(SelectedFingerIndex);
+        }
+
+        public void OpenInventory()
+        {
+            if (isOpen) return;
+
+            isOpen = true;
+            Debug.Log("[InventorySystem] Inventory Opened.");
+
+            if (FingerSlots != null && FingerSlots.Count > 0)
+            {
+                if (selectedFingerIndex < 0 || selectedFingerIndex >= FingerSlots.Count)
+                    selectedFingerIndex = 0;
+            }
+
+            OnInventoryChanged?.Invoke();
+            OnSelectionChanged?.Invoke(selectedFingerIndex);
+        }
+
+        public void CloseInventory()
+        {
+            if (!isOpen) return;
+
+            isOpen = false;
+            OnInventoryChanged?.Invoke();
+        }
+
+        public void ToggleInventory()
+        {
+            if (isOpen) CloseInventory();
+            else OpenInventory();
+        }
+
+        public InventorySlot GetSelectedSlot()
+        {
+            if (FingerSlots == null || FingerSlots.Count == 0)
+                return null;
+
+            if (selectedFingerIndex < 0 || selectedFingerIndex >= FingerSlots.Count)
+                return null;
+
+            return FingerSlots[selectedFingerIndex];
+        }
+
+        public void MoveSelection(int direction)
+        {
+            if (!isOpen) return;
+            if (FingerSlots == null || FingerSlots.Count == 0) return;
+            if (direction == 0) return;
+
+            int previousIndex = selectedFingerIndex;
+            int nextIndex = selectedFingerIndex;
+            int attempts = 0;
+
+            do
+            {
+                nextIndex += direction;
+
+                if (nextIndex < 0)
+                    nextIndex = FingerSlots.Count - 1;
+                else if (nextIndex >= FingerSlots.Count)
+                    nextIndex = 0;
+                attempts++;
+            }
+            while (attempts <= FingerSlots.Count && (FingerSlots[nextIndex] == null || !FingerSlots[nextIndex].HasMaterial));
+
+            if (FingerSlots[nextIndex] == null || !FingerSlots[nextIndex].HasMaterial) return;
+
+            selectedFingerIndex = nextIndex;
+
+            if (selectedFingerIndex != previousIndex)
+                OnSelectionChanged?.Invoke(selectedFingerIndex);
+
             OnInventoryChanged?.Invoke();
         }
     }
