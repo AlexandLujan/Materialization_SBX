@@ -48,7 +48,11 @@ namespace Materialization.Core.Input
 
             controls.Player.Jump.performed += _ => JumpPressed = true;
             controls.Player.AttackUseMaterial.performed += _ => AttackPressed = true;
-            controls.Player.Menu.performed += _ => MenuPressed = true;
+            controls.Player.Menu.performed += _ =>
+            {
+                MenuPressed = true;
+                Debug.Log("[PlayerInputReader] Menu pressed fired.");
+            };
             controls.Player.Interact.performed += _ => InteractPressed = true;
 
             controls.Player.ToggleCamera.performed += _ =>
@@ -57,10 +61,10 @@ namespace Materialization.Core.Input
                 UpdateCursorState();
             };
 
-            controls.Inventory.MoveLeft.performed += ctx => InventoryLeftPressed = true;
-            controls.Inventory.MoveRight.performed += ctx => InventoryRightPressed = true;
-            controls.Inventory.Selection.performed += ctx => InventorySelectPressed = true;
-            controls.Inventory.GoBack.performed += ctx => InventoryBackPressed = true;
+            controls.Inventory.MoveLeft.performed += _ => InventoryLeftPressed = true;
+            controls.Inventory.MoveRight.performed += _ => InventoryRightPressed = true;
+            controls.Inventory.Selection.performed += _ => InventorySelectPressed = true;
+            controls.Inventory.GoBack.performed += _ => InventoryBackPressed = true;
         }
         private void OnEnable()
         {
@@ -79,6 +83,8 @@ namespace Materialization.Core.Input
             MenuPressed = false;
             InteractPressed = false;
 
+            InventoryLeftPressed = false;
+            InventoryRightPressed = false;
             InventorySelectPressed = false;
             InventoryBackPressed = false;
         }

@@ -68,7 +68,7 @@ namespace Materialization.Features.Inventory
             if (isOpen) return;
 
             isOpen = true;
-            Debug.Log("[InventorySystem] Inventory Opened.");
+            Debug.Log($"[InventorySystem] Inventory Opened. | Instance ID = {GetInstanceID()}");
 
             if (FingerSlots != null && FingerSlots.Count > 0)
             {

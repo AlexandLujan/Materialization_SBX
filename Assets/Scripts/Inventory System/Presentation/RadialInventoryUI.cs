@@ -24,8 +24,12 @@ namespace Materialization.Features.Inventory.UI
 
         private void OnEnable()
         {
+            Debug.Log("[RadialInventoryUI] OnEnable Fired.");
             if (inventorySystem == null)
+            {
+                Debug.LogWarning("[RadialInventoryUI] inventorySystem is null in OnEnable.");
                 return;
+            }
 
             inventorySystem.OnInventoryChanged += RefreshUI;
             inventorySystem.OnSelectionChanged += HandleSelectionChanged;
@@ -42,11 +46,13 @@ namespace Materialization.Features.Inventory.UI
 
         private void Start()
         {
+            Debug.Log("[RadialInventoryUI] Start fired.");
             RefreshUI();
         }
 
         private void HandleSelectionChanged(int index)
         {
+            Debug.Log($"[RadialInventoryUI] Selection changed -> {index}");
             RefreshUI();
         }
 
@@ -60,8 +66,13 @@ namespace Materialization.Features.Inventory.UI
 
             Debug.Log($"RadialInventoryUI RefreshUI -> IsOpen: {inventorySystem.IsOpen}");
 
-            if (root != null)
+            if (root == null)
+                Debug.LogWarning("[RadialInventoryUI] rootObject is null.");
+            else
+            {
+                Debug.Log($"[RadialInventoryUI] Setting rootObject active = {inventorySystem.IsOpen}");
                 root.SetActive(inventorySystem.IsOpen);
+            }
 
             RefreshPalm();
             RefreshFingers();

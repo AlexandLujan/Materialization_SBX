@@ -1,12 +1,87 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using Materialization.Core.Input;
 
 namespace Materialization.Features.Inventory.Input
 {
     public class InventoryInputController : MonoBehaviour
     {
+        [Header("Reference")]
+        [SerializeField] private PlayerInputReader input;
+        [SerializeField] private InventorySystem inventorySystem;
+
+        private void Awake()
+        {
+            Debug.Log("[InventoryInputController] Awake fired.");
+
+            if (input == null)
+            {
+                input = GetComponent<PlayerInputReader>();
+            }
+
+            Debug.Log($"[InventoryInputController] Input found? {input != null}");
+            Debug.Log($"[InventoryInputController] InventorySystem found? {inventorySystem != null}");
+        }
+
+        private void Update()
+        {
+            Debug.Log("[InventoryInputController] Update fired.");
+
+            if (input == null || inventorySystem == null)
+            {
+                Debug.LogWarning("[InventoryInputController] Missing input or inventorySystem.");
+                return;
+            }
+
+            Debug.Log($"[InventoryInputController] MenuPressed = {input.MenuPressed}, IsOpen = {inventorySystem.IsOpen}");
+
+            HandleOpenClose();
+            HandleNavigation();
+            HandleSelection();
+        }
+
+        private void HandleOpenClose()
+        {
+            if (!inventorySystem.IsOpen)
+            {
+                if (input.MenuPressed)
+                {
+                    Debug.Log("[InventoryInputController] Opening inventory.");
+                    inventorySystem.OpenInventory();
+                }
+                return;
+            }
+
+            if (input.InventoryBackPressed)
+            {
+                Debug.Log("[InventoryInputController] Closing inventory.");
+                inventorySystem.CloseInventory();
+            }
+        }
+
+        private void HandleNavigation()
+        {
+            if (!inventorySystem.IsOpen)
+                return;
+
+            if (input.InventoryLeftPressed)
+                inventorySystem.MoveSelection(-1);
+
+            if (input.InventoryRightPressed)
+                inventorySystem.MoveSelection(1);
+        }
+
+        private void HandleSelection()
+        {
+            if (!inventorySystem.IsOpen)
+                return;
+
+            if (input.InventorySelectPressed)
+                inventorySystem.SwapPalmWithFinger();
+        }
+
+        /*
         [SerializeField] private PlayerInput playerInput;
         [SerializeField] private InventorySystem inventorySystem;
 
@@ -123,5 +198,6 @@ namespace Materialization.Features.Inventory.Input
         {
             if (playerInput != null) playerInput.SwitchCurrentActionMap(inventoryMapName);
         }
+        */
     }
 }
