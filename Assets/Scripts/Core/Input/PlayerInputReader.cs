@@ -7,6 +7,7 @@ namespace Materialization.Core.Input
     public class PlayerInputReader : MonoBehaviour
     {
         private PlayerControls controls;
+        public InputMode CurrentMode { get; private set; } = InputMode.Player;
 
         public Vector2 Move { get; private set; }
         public Vector2 Look { get; private set; }
@@ -51,7 +52,7 @@ namespace Materialization.Core.Input
             controls.Player.Menu.performed += _ =>
             {
                 MenuPressed = true;
-                Debug.Log("[PlayerInputReader] Menu pressed fired.");
+                // Debug.Log("[PlayerInputReader] Menu pressed fired.");
             };
             controls.Player.Interact.performed += _ => InteractPressed = true;
 
@@ -68,12 +69,13 @@ namespace Materialization.Core.Input
         }
         private void OnEnable()
         {
-            controls.Enable();
+            SetInputMode(InputMode.Player);
         }
 
         private void OnDisable()
         {
-            controls.Disable();
+            controls.Player.Disable();
+            controls.Inventory.Disable();
         }
 
         private void LateUpdate()
@@ -87,6 +89,30 @@ namespace Materialization.Core.Input
             InventoryRightPressed = false;
             InventorySelectPressed = false;
             InventoryBackPressed = false;
+        }
+
+        public void SetInputMode(InputMode mode)
+        {
+            if (CurrentMode == mode) return;
+
+            CurrentMode = mode;
+
+            controls.Player.Disable();
+            controls.Inventory.Disable();
+
+            switch (CurrentMode)
+            {
+                case InputMode.Player:
+                    controls.Player.Enable();
+                    Move = Vector2.zero;
+                    break;
+                case InputMode.Inventory:
+                    controls.Inventory.Enable();
+                    Move = Vector2.zero;
+                    Look = Vector2.zero;
+                    SprintHeld = false;
+                    break;
+            }
         }
 
         public float ConsumeZoom()
