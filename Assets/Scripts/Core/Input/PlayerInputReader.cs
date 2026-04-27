@@ -49,11 +49,7 @@ namespace Materialization.Core.Input
 
             controls.Player.Jump.performed += _ => JumpPressed = true;
             controls.Player.AttackUseMaterial.performed += _ => AttackPressed = true;
-            controls.Player.Menu.performed += _ =>
-            {
-                MenuPressed = true;
-                // Debug.Log("[PlayerInputReader] Menu pressed fired.");
-            };
+            controls.Player.Menu.performed += _ => MenuPressed = true;
             controls.Player.Interact.performed += _ => InteractPressed = true;
 
             controls.Player.ToggleCamera.performed += _ =>
@@ -93,24 +89,28 @@ namespace Materialization.Core.Input
 
         public void SetInputMode(InputMode mode)
         {
-            if (CurrentMode == mode) return;
+            Debug.Log($"[PlayerInputReader] SetInputMode called -> {mode}");
 
             CurrentMode = mode;
 
             controls.Player.Disable();
             controls.Inventory.Disable();
 
-            switch (CurrentMode)
+            Move = Vector2.zero;
+            Look = Vector2.zero;
+            CameraZoom = 0f;
+            SprintHeld = false;
+
+            switch (mode)
             {
                 case InputMode.Player:
                     controls.Player.Enable();
-                    Move = Vector2.zero;
+                    Debug.Log($"[PlayerInputReader] Player enabled: {controls.Player.enabled}, Inventory enabled: {controls.Inventory.enabled}");
                     break;
+
                 case InputMode.Inventory:
                     controls.Inventory.Enable();
-                    Move = Vector2.zero;
-                    Look = Vector2.zero;
-                    SprintHeld = false;
+                    Debug.Log($"[PlayerInputReader] Player enabled: {controls.Player.enabled}, Inventory enabled: {controls.Inventory.enabled}");
                     break;
             }
         }

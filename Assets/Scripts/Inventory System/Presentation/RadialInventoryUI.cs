@@ -13,26 +13,29 @@ namespace Materialization.Features.Inventory.UI
         [SerializeField] private InventorySlotView palmView;
         [SerializeField] private InventorySlotView[] fingerViews;
 
+        private bool showHighlight;
+
         private void Awake()
         {
             if (inventorySystem == null)
                 inventorySystem = GetComponentInParent<InventorySystem>();
 
             if (root != null)
-                root.SetActive(false);
+                root.SetActive(true);
         }
 
         private void OnEnable()
         {
-            Debug.Log("[RadialInventoryUI] OnEnable Fired.");
+            // Debug.Log("[RadialInventoryUI] OnEnable Fired.");
             if (inventorySystem == null)
             {
-                Debug.LogWarning("[RadialInventoryUI] inventorySystem is null in OnEnable.");
+                // Debug.LogWarning("[RadialInventoryUI] inventorySystem is null in OnEnable.");
                 return;
             }
 
             inventorySystem.OnInventoryChanged += RefreshUI;
             inventorySystem.OnSelectionChanged += HandleSelectionChanged;
+            inventorySystem.OnInventoryOpenStateChanged += HandleInventoryOpenStateChanged;
         }
 
         private void OnDisable()
@@ -42,17 +45,29 @@ namespace Materialization.Features.Inventory.UI
 
             inventorySystem.OnInventoryChanged -= RefreshUI;
             inventorySystem.OnSelectionChanged -= HandleSelectionChanged;
+            inventorySystem.OnInventoryOpenStateChanged -= HandleInventoryOpenStateChanged;
         }
 
         private void Start()
         {
-            Debug.Log("[RadialInventoryUI] Start fired.");
+            // Debug.Log("[RadialInventoryUI] Start fired.");
+
+            if (inventorySystem != null)
+                showHighlight = inventorySystem.IsOpen;
+
             RefreshUI();
         }
 
         private void HandleSelectionChanged(int index)
         {
-            Debug.Log($"[RadialInventoryUI] Selection changed -> {index}");
+            // Debug.Log($"[RadialInventoryUI] Selection changed -> {index}");
+            RefreshUI();
+        }
+
+        private void HandleInventoryOpenStateChanged(bool isOpen)
+        {
+            // Debug.Log($"[RadialInventoryUI] Inventory open state changed -> {isOpen}");
+            showHighlight = isOpen;
             RefreshUI();
         }
 
@@ -60,14 +75,14 @@ namespace Materialization.Features.Inventory.UI
         {
             if (inventorySystem == null)
             {
-                Debug.LogWarning("RadialInventoryUI: inventorySystem is null.");
+                // Debug.LogWarning("RadialInventoryUI: inventorySystem is null.");
                 return;
             }
 
-            Debug.Log($"RadialInventoryUI RefreshUI -> IsOpen: {inventorySystem.IsOpen}");
+            // Debug.Log($"RadialInventoryUI RefreshUI -> IsOpen: {inventorySystem.IsOpen}");
 
-            if (root == null)
-                Debug.LogWarning("[RadialInventoryUI] rootObject is null.");
+            if (root != null)
+                root.SetActive(true);
             else
             {
                 Debug.Log($"[RadialInventoryUI] Setting rootObject active = {inventorySystem.IsOpen}");
@@ -86,7 +101,8 @@ namespace Materialization.Features.Inventory.UI
             palmView.Refresh(
                 inventorySystem.EquippedSlot,
                 isSelected: false,
-                isFingerSlot: false
+                isFingerSlot: false,
+                showHighlight: false
             );
         }
 
@@ -98,18 +114,23 @@ namespace Materialization.Features.Inventory.UI
             {
                 if (fingerViews[i] == null) continue;
 
-                if (slots == null || i >= slots.Count || slots[i] == null || slots[i].IsEmpty || slots[i] == null)
+                if (fingerViews[i] == null)
                 {
-                    fingerViews[i].SetEmpty();
                     continue;
                 }
+
+                InventorySlot slot = null;
+
+                if (slots != null && i < slots.Count)
+                    slot = slots[i];
 
                 bool isSelected = i == inventorySystem.SelectedFingerIndex;
 
                 fingerViews[i].Refresh(
                     slots[i],
                     isSelected: isSelected,
-                    isFingerSlot: true
+                    isFingerSlot: true,
+                    showHighlight: showHighlight
                 );
             }
         }

@@ -13,28 +13,38 @@ namespace Materialization.Features.Inventory.Input
 
         private void Awake()
         {
-            Debug.Log("[InventoryInputController] Awake fired.");
+            // Debug.Log("[InventoryInputController] Awake fired.");
 
             if (input == null)
-            {
                 input = GetComponent<PlayerInputReader>();
-            }
 
-            Debug.Log($"[InventoryInputController] Input found? {input != null}");
-            Debug.Log($"[InventoryInputController] InventorySystem found? {inventorySystem != null}");
+            if (input == null)
+                input = FindFirstObjectByType<PlayerInputReader>();
+
+            if (inventorySystem == null)
+                inventorySystem = GetComponent<InventorySystem>();
+
+            if (inventorySystem == null)
+                inventorySystem = GetComponentInParent<InventorySystem>();
+
+            if (inventorySystem == null)
+                inventorySystem = FindFirstObjectByType<InventorySystem>();
+
+            // Debug.Log($"[InventoryInputController] Input found? {input != null}");
+            // Debug.Log($"[InventoryInputController] InventorySystem found? {inventorySystem != null}");
         }
 
         private void Update()
         {
-            Debug.Log("[InventoryInputController] Update fired.");
+            // Debug.Log("[InventoryInputController] Update fired.");
 
             if (input == null || inventorySystem == null)
             {
-                Debug.LogWarning("[InventoryInputController] Missing input or inventorySystem.");
+                // Debug.LogWarning("[InventoryInputController] Missing input or inventorySystem.");
                 return;
             }
 
-            Debug.Log($"[InventoryInputController] MenuPressed = {input.MenuPressed}, IsOpen = {inventorySystem.IsOpen}");
+            // Debug.Log($"[InventoryInputController] MenuPressed = {input.MenuPressed}, IsOpen = {inventorySystem.IsOpen}");
 
             HandleOpenClose();
             HandleNavigation();
@@ -47,7 +57,8 @@ namespace Materialization.Features.Inventory.Input
             {
                 if (input.MenuPressed)
                 {
-                    Debug.Log("[InventoryInputController] Opening inventory.");
+                    Debug.Log("[InventoryInputController] MenuPressed detected. Calling OpenInventory().");
+                    Debug.Log($"[InventoryInputController] InventorySystem Instance ID = {inventorySystem.GetInstanceID()}");
                     inventorySystem.OpenInventory();
                 }
                 return;
@@ -55,7 +66,8 @@ namespace Materialization.Features.Inventory.Input
 
             if (input.InventoryBackPressed)
             {
-                Debug.Log("[InventoryInputController] Closing inventory.");
+                Debug.Log("[InventoryInputController] InventoryBackPressed detected. Calling CloseInventory().");
+                Debug.Log($"[InventoryInputController] InventorySystem Instance ID = {inventorySystem.GetInstanceID()}");
                 inventorySystem.CloseInventory();
             }
         }

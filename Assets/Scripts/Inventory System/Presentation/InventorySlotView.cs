@@ -23,40 +23,31 @@ namespace Materialization.Features.Inventory.UI
                 stockText = GetComponentInChildren<TMP_Text>(true);
         }
 
-        public void Refresh(InventorySlot slot, bool isSelected, bool isFingerSlot)
+        public void Refresh(InventorySlot slot, bool isSelected, bool isFingerSlot, bool showHighlight)
         {
-            if (slot == null || !slot.HasMaterial)
+            bool hasMaterial = slot != null && slot.HasMaterial;
+
+            if (!hasMaterial)
             {
-                SetEmpty();
-                return;
+                SetEmpty(isFingerSlot);
+            }
+            else
+            {
+                Sprite icon = null;
+
+                if (slot.MaterialData != null)
+                    icon = slot.MaterialData.Icon;
+
+                SetFilled(icon, slot.CurrentStock, isFingerSlot);
+
+                if (canvasGroup != null)
+                    canvasGroup.alpha = slot.HasStock ? 1f : 0.4f;
             }
 
-            Sprite icon = null;
-
-            if (slot.MaterialData != null)
-                icon = slot.MaterialData.Icon;
-
-            SetFilled(icon, slot.CurrentStock);
-            SetSelected(isSelected);
-
-            if (stockText != null)
-            {
-                if (isFingerSlot)
-                {
-                    stockText.gameObject.SetActive(false);
-                }
-                else
-                {
-                    stockText.gameObject.SetActive(true);
-                    stockText.text = slot.CurrentStock.ToString();
-                }
-            }
-
-            if (canvasGroup != null)
-                canvasGroup.alpha = slot.HasStock ? 1f : 0.4f;
+            SetSelected(showHighlight && isSelected);
         }
 
-        public void SetEmpty()
+        public void SetEmpty(bool isFingerSlot)
         {
             if (placeholderImage != null)
                 placeholderImage.enabled = true;
@@ -69,17 +60,23 @@ namespace Materialization.Features.Inventory.UI
 
             if (stockText != null)
             {
-                stockText.text = string.Empty;
-                stockText.gameObject.SetActive(true);
+                if (isFingerSlot)
+                {
+                    stockText.text = string.Empty;
+                    stockText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    stockText.text = string.Empty;
+                    stockText.gameObject.SetActive(true);
+                }
             }
 
             if (canvasGroup != null)
                 canvasGroup.alpha = 1f;
-
-            SetSelected(false);
         }
 
-        public void SetFilled(Sprite icon, int stock)
+        public void SetFilled(Sprite icon, int stock, bool isFingerSlot)
         {
             if (placeholderImage != null)
                 placeholderImage.enabled = false;
@@ -91,7 +88,18 @@ namespace Materialization.Features.Inventory.UI
             }
 
             if (stockText != null)
-                stockText.text = stock.ToString();
+            {
+                if (isFingerSlot)
+                {
+                    stockText.text = string.Empty;
+                    stockText.gameObject.SetActive(false);
+                }
+                else
+                {
+                    stockText.text = stock.ToString();
+                    stockText.gameObject.SetActive(true);
+                }
+            }
         }
 
         public void SetSelected(bool selected)

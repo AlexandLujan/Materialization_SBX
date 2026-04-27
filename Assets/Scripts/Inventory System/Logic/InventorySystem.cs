@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Materialization.Core.Input;
 using Materialization.Features.Inventory;
 using System;
 using System.Collections;
@@ -9,30 +10,53 @@ namespace Materialization.Features.Inventory
 {
     public class InventorySystem : MonoBehaviour
     {
+        [SerializeField] private PlayerInputReader inputReader;
         [SerializeField] private InventorySlot equippedSlot = new InventorySlot();
         [SerializeField] private InventoryCategory materialCategory;
         [SerializeField] private int selectedFingerIndex = 0;
         [SerializeField] private bool isOpen;
-        public bool IsOpen => isOpen;
 
+        public bool IsOpen => isOpen;
         public InventorySlot EquippedSlot => equippedSlot;
-        public List<InventorySlot> FingerSlots => materialCategory.slots;
+        public List<InventorySlot> FingerSlots => materialCategory != null ? materialCategory.slots : null;
         public int SelectedFingerIndex => selectedFingerIndex;
 
         public event Action OnInventoryChanged;
         public event Action<int> OnSelectionChanged;
+        public event Action<bool> OnInventoryOpenStateChanged;
+
+        private void Awake()
+        {
+            if (inputReader == null)
+                inputReader = FindFirstObjectByType<PlayerInputReader>();
+        }
 
         private void Start()
         {
+            if (FingerSlots != null && FingerSlots.Count > 0)
+            {
+                if (selectedFingerIndex < 0 || selectedFingerIndex >= FingerSlots.Count)
+                    selectedFingerIndex = 0;
+            }
+            else
+            {
+                selectedFingerIndex = 0;
+            }
+
             OnInventoryChanged?.Invoke();
+            OnSelectionChanged?.Invoke(selectedFingerIndex);
+            OnInventoryOpenStateChanged?.Invoke(isOpen);
         }
 
         public void SelectFinger(int index)
         {
-            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
+            if (FingerSlots == null || FingerSlots.Count == 0)
                 return;
 
-            if (index < 0 || index >= materialCategory.slots.Count)
+            if (index < 0 || index >= FingerSlots.Count)
+                return;
+
+            if (selectedFingerIndex == index)
                 return;
 
             selectedFingerIndex = index;
@@ -52,32 +76,42 @@ namespace Materialization.Features.Inventory
 
         public void SwapPalmWithFinger()
         {
-            if (materialCategory == null || materialCategory.slots == null || materialCategory.slots.Count == 0)
+            if (FingerSlots == null || FingerSlots.Count == 0)
                 return;
 
-            if (selectedFingerIndex < 0 || selectedFingerIndex >= materialCategory.slots.Count)
+            if (selectedFingerIndex < 0 || selectedFingerIndex >= FingerSlots.Count)
                 return;
 
-            equippedSlot.SwapWith(materialCategory.slots[selectedFingerIndex]);
+            InventorySlot selectedSlot = FingerSlots[selectedFingerIndex];
+            if (selectedSlot == null)
+                return;
+
+            equippedSlot.SwapWith(selectedSlot);
             OnInventoryChanged?.Invoke();
             OnSelectionChanged?.Invoke(SelectedFingerIndex);
         }
 
         public void OpenInventory()
         {
+            Debug.Log($"[InventorySystem] OpenInventory() called. Instance ID = {GetInstanceID()}");
+
             if (isOpen) return;
 
             isOpen = true;
-            Debug.Log($"[InventorySystem] Inventory Opened. | Instance ID = {GetInstanceID()}");
 
-            if (FingerSlots != null && FingerSlots.Count > 0)
+            if (inputReader != null)
             {
-                if (selectedFingerIndex < 0 || selectedFingerIndex >= FingerSlots.Count)
-                    selectedFingerIndex = 0;
+                Debug.Log($"[InventorySystem] Calling SetInputMode(Inventory) on PlayerInputReader instance {inputReader.GetInstanceID()}");
+                inputReader.SetInputMode(InputMode.Inventory);
+            }
+            else
+            {
+                Debug.LogWarning("[InventorySystem] inputReader is null.");
             }
 
             OnInventoryChanged?.Invoke();
             OnSelectionChanged?.Invoke(selectedFingerIndex);
+            OnInventoryOpenStateChanged?.Invoke(true);
         }
 
         public void CloseInventory()
@@ -85,7 +119,12 @@ namespace Materialization.Features.Inventory
             if (!isOpen) return;
 
             isOpen = false;
+
+            if (inputReader != null)
+                inputReader.SetInputMode(InputMode.Player);
+
             OnInventoryChanged?.Invoke();
+            OnInventoryOpenStateChanged?.Invoke(false);
         }
 
         public void ToggleInventory()

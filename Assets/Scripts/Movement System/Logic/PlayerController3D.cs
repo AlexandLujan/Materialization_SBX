@@ -53,10 +53,10 @@ namespace Materialization.Features.Movement
             bool grounded = groundChecker.IsGrounded;
 
             if (groundChecker.JustLanded)
-                Debug.Log("[PlayerController3D] GroundChecker says: JustLanded");
+                // Debug.Log("[PlayerController3D] GroundChecker says: JustLanded");
 
             if (groundChecker.JustLeftGround)
-                Debug.Log("[PlayerController3D] GroundChecker says: JustLeftGround");
+                // Debug.Log("[PlayerController3D] GroundChecker says: JustLeftGround");
 
             movementSystem.SetGrounded(grounded);
             movementSystem.SetGroundNormal(groundChecker.GroundNormal);
@@ -67,6 +67,22 @@ namespace Materialization.Features.Movement
 
             if (groundChecker.JustLeftGround)
                 movementSystem.NotifyLeftGround();
+
+            if (inventorySystem != null && inventorySystem.IsOpen)
+            {
+                movementSystem.SetMoving(false);
+                movementSystem.SetSprinting(false);
+                movementSystem.SetHorizontalSpeed(0f);
+
+                if (grounded && verticalVelocity.y < 0f)
+                    verticalVelocity.y = -2f;
+
+                verticalVelocity.y += gravity * Time.deltaTime;
+                controller.Move(verticalVelocity * Time.deltaTime);
+
+                movementSystem.SetVerticalSpeed(verticalVelocity.y);
+                return;
+            }
 
             if (!movementSystem.CanMove)
             {
@@ -143,16 +159,18 @@ namespace Materialization.Features.Movement
 
         private void HandleActions()
         {
+            if (input.MenuPressed && inventorySystem != null)
+            {
+                inventorySystem.ToggleInventory();
+                return;
+            }
+
             if (inventorySystem != null && inventorySystem.IsOpen)
                 return;
 
             // Will likely require some sort of Animation and Feedback communication system.
             if (input.AttackPressed)
                 Debug.Log("Attack Triggered");
-
-            // Will likely require some sort of Input Action communication system.
-            if (input.MenuPressed)
-                Debug.Log("Menu Opened");
 
             // Will likely require some sort of Input Action communication system.
             if (input.InteractPressed)
